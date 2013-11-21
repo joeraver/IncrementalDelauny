@@ -95,7 +95,7 @@ void mouseClicked() {
   if (firstClick == true){
     tNode = makeFirstTriangle(currentpoint);
   }
-  else tNode = null;
+  else tNode = makeFirstTriangle(currentpoint);
   println(onFace(currentpoint, testedge));
   currentpoint.display();
   //triangulate(currentpoint);
