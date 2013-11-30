@@ -1,13 +1,16 @@
 vertex testpoint;
 vertex endpoint;
 vertex pointy;
-halfEdge testedge;
+halfEdge testEdge;
 halfEdge edge1;
 halfEdge edge2;
 halfEdge edge3;
 vertex currentpoint;
 boolean firstClick;
 int padding = 200;
+int lastTime = 0;
+ArrayList<halfEdge> edgeList = new ArrayList<halfEdge>();
+
 class vertex {
   
   float x;
@@ -44,6 +47,9 @@ class halfEdge {
     float faceY = a.y + temp;
     float faceX = a.x + valY;
     face = new vertex( faceX, faceY);
+    
+    edgeList.add(this);
+    
     this.display();
    
         
@@ -54,10 +60,56 @@ class halfEdge {
     line(origin.x, origin.y, destination.x, destination.y);
     ellipse(origin.x, origin.y, 8, 8);
     ellipse(destination.x, destination.y, 8, 8);
+    //this.holdOn();
+  
+  }
+  
+  void displayGreen() {
+    fill(255, 0, 0);
+    stroke(0, 255, 0);
+    line(origin.x, origin.y, destination.x, destination.y);
+    ellipse(origin.x, origin.y, 8, 8);
+    ellipse(destination.x, destination.y, 8, 8);
+    //this.holdOn();
     
-
+    fill(0);
+    stroke(0);
+  
+  }
+  
+  void displayRed() {
+    fill(255, 0, 0);
+    stroke(255, 0, 0);
+    line(origin.x, origin.y, destination.x, destination.y);
+    ellipse(origin.x, origin.y, 8, 8);
+    ellipse(destination.x, destination.y, 8, 8);
+    //this.holdOn();
+    
+    fill(0);
+    stroke(0);
+  
+  }
+  
+  void displayBlue() {
+    fill(255, 0, 0);
+    stroke(0, 0, 255);
+    line(origin.x, origin.y, destination.x, destination.y);
+    ellipse(origin.x, origin.y, 8, 8);
+    ellipse(destination.x, destination.y, 8, 8);
+    //this.holdOn();
+    
+    fill(0);
+    stroke(0);
+  
   }
 
+  void holdOn() {
+    lastTime = second();
+    if ((second() - lastTime) < 3){
+      this.holdOn();
+    }
+  }
+  
   void displayFace() {
     fill(0);
     ellipse(face.x, face.y, 8, 8);
@@ -74,18 +126,12 @@ boolean onFace( vertex p, halfEdge hE){
 }
 
 void setup() {
-  testpoint = new vertex( 200, 250);
-  endpoint = new vertex( 210, 270);
-  pointy = new vertex( 300, 300);
-  testedge = new halfEdge(testpoint, endpoint);
-  size(480, 480);
+  size(600, 600);
   background(255);
   firstClick = true;
 }
 
 void draw() {
-  testedge.display();
-  testedge.displayFace();
 }
 
 void mouseClicked() {
@@ -95,11 +141,19 @@ void mouseClicked() {
   if (firstClick == true){
     tNode = makeFirstTriangle(currentpoint);
   }
-  else tNode = makeFirstTriangle(currentpoint);
-  println(onFace(currentpoint, testedge));
+  else tNode = triangulate(currentpoint);
+  
   currentpoint.display();
-  //triangulate(currentpoint);
-  split(tNode, currentpoint);
+  if ( tNode != null) {
+    testEdge = tNode.halfTwo;
+    testEdge.displayGreen();
+    testEdge.prev.displayRed();
+    testEdge.next.displayBlue();
+    println(onFace(currentpoint, testEdge));
+    split(tNode, currentpoint);
+  }
+  
+ 
 }
 
 triangleNode makeFirstTriangle(vertex p) {
@@ -124,6 +178,9 @@ triangleNode makeFirstTriangle(vertex p) {
     C.prev = B;
     firstClick = false;
     tNodeInitial = new triangleNode(A,B,C);
+    
+     testEdge = tNodeInitial.halfOne;
+    
     return tNodeInitial;  
 }
 
@@ -150,6 +207,22 @@ class triangleNode {
 // class triangleHierarchy {
 //}
 
+triangleNode triangulate(vertex p){
+triangleNode tNode = null; 
+  for (int i = edgeList.size()-1; i >= 0; i--) {
+    if (onFace( p, edgeList.get(i))){
+      if (onFace( p, edgeList.get(i).next)){
+        if (onFace( p, edgeList.get(i).prev)){
+          tNode = new triangleNode(edgeList.get(i).prev, edgeList.get(i), edgeList.get(i).next);
+          break;
+        }
+      }
+    }
+  }
+if (tNode == null){println("it returned null for triangulate.");}
+return tNode;
+}
+
 void split(triangleNode node, vertex p){
    halfEdge halfOne = node.halfOne;
    halfEdge halfTwo = node.halfTwo;
@@ -168,19 +241,19 @@ void split(triangleNode node, vertex p){
    halfOne.next.next = halfOne.prev;
    
    halfOne.prev.next = halfOne;
-   halfOne.prev.prev = halfOne.prev;
+   halfOne.prev.prev = halfOne.next;
    
    halfTwo.next.prev = halfTwo;
    halfTwo.next.next = halfTwo.prev;
    
    halfTwo.prev.next = halfTwo;
-   halfTwo.prev.prev = halfTwo.prev;
+   halfTwo.prev.prev = halfTwo.next;
    
    halfThree.next.prev = halfThree;
    halfThree.next.next = halfThree.prev;
    
    halfThree.prev.next = halfThree;
-   halfThree.prev.prev = halfThree.prev;
+   halfThree.prev.prev = halfThree.next;
    
    halfOne.next.twin = halfTwo.prev;
    halfTwo.prev.twin = halfOne.next;
