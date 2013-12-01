@@ -7,7 +7,7 @@ halfEdge edge2;
 halfEdge edge3;
 vertex currentpoint;
 boolean firstClick;
-int padding = 200;
+int padding = 100;
 int lastTime = 0;
 ArrayList<halfEdge> edgeList = new ArrayList<halfEdge>();
 
@@ -61,7 +61,7 @@ class halfEdge {
     ellipse(origin.x, origin.y, 8, 8);
     ellipse(destination.x, destination.y, 8, 8);
     //this.holdOn();
-  
+    displayFace();
   }
   
   void displayGreen() {
@@ -113,6 +113,9 @@ class halfEdge {
   void displayFace() {
     fill(0);
     ellipse(face.x, face.y, 8, 8);
+    
+    line(face.x, face.y, face.x + (destination.x - origin.x)*.3 ,face.y + (destination.y - origin.y)*.3 );
+    
   }
 }
 
@@ -211,8 +214,11 @@ triangleNode triangulate(vertex p){
 triangleNode tNode = null; 
   for (int i = edgeList.size()-1; i >= 0; i--) {
     if (onFace( p, edgeList.get(i))){
+      println("I passed the testEdge: " + edgeList.get(i).origin.x + ", " + edgeList.get(i).origin.y + " to " + edgeList.get(i).destination.x + ", " + edgeList.get(i).destination.y);
       if (onFace( p, edgeList.get(i).next)){
+        println("I passed the nextEdge");
         if (onFace( p, edgeList.get(i).prev)){
+          println("I passed the prevEdge");
           tNode = new triangleNode(edgeList.get(i).prev, edgeList.get(i), edgeList.get(i).next);
           break;
         }
