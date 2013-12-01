@@ -61,7 +61,7 @@ class halfEdge {
     ellipse(origin.x, origin.y, 8, 8);
     ellipse(destination.x, destination.y, 8, 8);
     //this.holdOn();
-    displayFace();
+   // displayFace();
   }
   
   void displayGreen() {
@@ -120,9 +120,16 @@ class halfEdge {
 }
 
 boolean onFace( vertex p, halfEdge hE){
-    boolean deterP = ( (hE.destination.x - hE.origin.x)*(p.y - hE.origin.y) ) - ( (p.x - hE.origin.x)*(hE.destination.y - hE.origin.y) ) > 0;    
-    boolean deterF = ( (hE.destination.x - hE.origin.y)*(hE.face.y - hE.origin.y) ) - ( (hE.face.x - hE.origin.x)*(hE.destination.y - hE.origin.y) ) >0;    
-    if ( deterP == deterF ){
+   // boolean deterP = ( (hE.destination.x - hE.origin.x)*(p.y - hE.origin.y) ) - ( (p.x - hE.origin.x)*(hE.destination.y - hE.origin.y) ) > 0;    
+   // boolean deterF = ( (hE.destination.x - hE.origin.y)*(hE.face.y - hE.origin.y) ) - ( (hE.face.x - hE.origin.x)*(hE.destination.y - hE.origin.y) ) >0;    
+    
+  //  boolean deterP = ( ((hE.destination.y - p.y) * hE.origin.x) + ((hE.destination.x - p.x) * hE.origin.y) + ((hE.destination.x * p.y) - (p.x * hE.destination.y)) ) > 0;
+  //  boolean deterF = ( ((hE.destination.y - hE.face.y) * hE.origin.x) + ((hE.destination.x - hE.face.x) * hE.origin.y) + ((hE.destination.x * hE.face.y) - (hE.face.x * hE.destination.y)) ) > 0;
+    
+    float deterP = ( (hE.origin.y - hE.destination.y)*(p.x - hE.origin.x) ) + ( (hE.destination.x - hE.origin.x)*(p.y - hE.origin.y) );    
+    float deterF = ( (hE.origin.y - hE.destination.y)*(hE.face.x - hE.origin.x) ) + ( (hE.destination.x - hE.origin.x)*(hE.face.y - hE.origin.y) );    
+    
+    if ( deterP * deterF > 0 ){
       return true;
     }
     else return false;
@@ -135,6 +142,10 @@ void setup() {
 }
 
 void draw() {
+  for(int i = 0; i<1000; i= i+50){
+    line( i , 0, i, 1000);
+    line(0, i, 1000, i);
+  }
 }
 
 void mouseClicked() {
@@ -142,24 +153,33 @@ void mouseClicked() {
   currentpoint = new vertex(mouseX, mouseY);
   triangleNode tNode;
   if (firstClick == true){
-    tNode = makeFirstTriangle(currentpoint);
+    makeFirstTriangle(currentpoint);
   }
-  else tNode = triangulate(currentpoint);
+  
+  tNode = triangulate(currentpoint);
   
   currentpoint.display();
   if ( tNode != null) {
-    testEdge = tNode.halfTwo;
+    //testEdge = tNode.halfTwo;
     testEdge.displayGreen();
     testEdge.prev.displayRed();
     testEdge.next.displayBlue();
+    
+     println("I'm testing the edge: " + testEdge.origin.x + ", " + testEdge.origin.y + " to " + testEdge.destination.x + ", " + testEdge.destination.y);
+      println("my prevedge is: " + testEdge.prev.origin.x + ", " + testEdge.prev.origin.y + " to " + testEdge.prev.destination.x + ", " + testEdge.prev.destination.y);
+      println("my nextEdge is: " + testEdge.next.origin.x + ", " + testEdge.next.origin.y + " to " + testEdge.next.destination.x + ", " + testEdge.next.destination.y);
+
     println(onFace(currentpoint, testEdge));
+    println(onFace(currentpoint, testEdge.prev));
+    println(onFace(currentpoint, testEdge.next));
+    
     split(tNode, currentpoint);
   }
   
  
 }
 
-triangleNode makeFirstTriangle(vertex p) {
+void makeFirstTriangle(vertex p) {
     vertex vertexA;
     vertex vertexB;
     vertex vertexC;
@@ -182,9 +202,9 @@ triangleNode makeFirstTriangle(vertex p) {
     firstClick = false;
     tNodeInitial = new triangleNode(A,B,C);
     
-     testEdge = tNodeInitial.halfOne;
+     testEdge = tNodeInitial.halfTwo;
     
-    return tNodeInitial;  
+    //return tNodeInitial;  
 }
 
 class triangleNode {
@@ -213,12 +233,16 @@ class triangleNode {
 triangleNode triangulate(vertex p){
 triangleNode tNode = null; 
   for (int i = edgeList.size()-1; i >= 0; i--) {
+      println("I'm testing the edge: " + edgeList.get(i).origin.x + ", " + edgeList.get(i).origin.y + " to " + edgeList.get(i).destination.x + ", " + edgeList.get(i).destination.y);
+      println("my prevedge is: " + edgeList.get(i).prev.origin.x + ", " + edgeList.get(i).prev.origin.y + " to " + edgeList.get(i).prev.destination.x + ", " + edgeList.get(i).prev.destination.y);
+      println("my nextEdge is: " + edgeList.get(i).next.origin.x + ", " + edgeList.get(i).next.origin.y + " to " + edgeList.get(i).next.destination.x + ", " + edgeList.get(i).next.destination.y);
+
     if (onFace( p, edgeList.get(i))){
       println("I passed the testEdge: " + edgeList.get(i).origin.x + ", " + edgeList.get(i).origin.y + " to " + edgeList.get(i).destination.x + ", " + edgeList.get(i).destination.y);
       if (onFace( p, edgeList.get(i).next)){
-        println("I passed the nextEdge");
+      println("I passed the nextEdge: " + edgeList.get(i).next.origin.x + ", " + edgeList.get(i).next.origin.y + " to " + edgeList.get(i).next.destination.x + ", " + edgeList.get(i).next.destination.y);
         if (onFace( p, edgeList.get(i).prev)){
-          println("I passed the prevEdge");
+      println("I passed the prevEdge: " + edgeList.get(i).prev.origin.x + ", " + edgeList.get(i).prev.origin.y + " to " + edgeList.get(i).prev.destination.x + ", " + edgeList.get(i).prev.destination.y);
           tNode = new triangleNode(edgeList.get(i).prev, edgeList.get(i), edgeList.get(i).next);
           break;
         }
