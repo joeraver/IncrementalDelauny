@@ -10,6 +10,7 @@ boolean firstClick;
 int padding = 100;
 int lastTime = 0;
 ArrayList<halfEdge> edgeList = new ArrayList<halfEdge>();
+ArrayList<halfEdge> needsChecking = new ArrayList<halfEdge>();
 
 class vertex {
   
@@ -155,12 +156,46 @@ float twoDeterminant ( float a, float b, float c, float d){
 boolean checkLD( halfEdge hE){
   if(hE.twin == null) {
   return true;
-  }
+  }else{
   
-  vertex A = hE.destination;
+  vertex realA = hE.destination;
   vertex B = hE.next.destination;
-  vertex C = hE.origin;
+  vertex realC = hE.origin;
   vertex D = hE.twin.next.destination;
+  
+  vertex A = realC;
+  vertex C = realA;
+  
+  print("A is point (");
+  print( A.x );
+  print( ", " );
+  print(A.y + ")" );
+  println();
+  
+  print("B is point (");
+  print( B.x );
+  print( ", " );
+  print(B.y + ")" );
+  println();
+  
+  print("C is point (");
+  print( C.x );
+  print( ", " );
+  print(C.y + ")" );
+  println();
+  
+  print("D is point (");
+  print( D.x );
+  print( ", " );
+  print(D.y + ")" );
+  println();
+
+ // println("B is point (" + B.x + ", " B.y + ")" );
+  //println("C is point (" + C.x + ", " C.y + ")" );
+  //println("D is point (" + D.x + ", " D.y + ")" );
+  
+  drawCircumCircle(A,B,C);
+  
   
   float topSquared = ((A.x * A.x) - (D.x * D.x)) + ((A.y * A.y) - (D.y * D.y));
   float midSquared = ((B.x * B.x) - (D.x * D.x)) + ((B.y * B.y) - (D.y * D.y));
@@ -171,12 +206,24 @@ boolean checkLD( halfEdge hE){
   float termThree = topSquared * twoDeterminant( (B.x - D.x), (B.y - D.y), (C.x - D.x), (C.y - D.y));
   
   float determinant = termOne - termTwo + termThree;
-  
+  println(termOne);
+  println(termTwo);
+  println(termThree);
+  println(determinant);
   if (determinant >= 0){
+        println("This is not locally Delaunay");
+
     return false;
   }
   else{
+         println("This is locally Delaunay");
+
     return true;
+
+  }
+  
+
+  
   }
   
 }
@@ -184,7 +231,30 @@ boolean checkLD( halfEdge hE){
 void flipEdge(halfEdge hE){
 }
 
-void doFlips(triangleNode tNode){
+void drawCircumCircle(vertex A, vertex B, vertex C){
+  float temp = 2 * ( (A.x *(B.y-C.y)) + (B.x *(C.y-A.y)) + (C.x*(A.y-B.y)) );
+  float centerX =( ( ((A.x*A.x) + (A.y*A.y)) * (B.y - C.y)) + (((B.x*B.x)+(B.y*B.y))*(C.y-A.y)) + (((C.x*C.x)+(C.y*C.y))*(A.y-B.y))) / temp;
+  float centerY =( ( ((A.x*A.x) + (A.y*A.y)) * (C.x - B.x)) + (((B.x*B.x)+(B.y*B.y))*(A.x-C.x)) + (((C.x*C.x)+(C.y*C.y))*(B.x-A.x))) / temp;
+  
+  float diameter = 2 * sqrt( ((centerX - A.x)*(centerX - A.x)) + ((centerY - A.y)*(centerY - A.y)) );  
+  
+  stroke(0);
+  noFill();
+  ellipse(centerX, centerY, diameter, diameter);
+}
+
+void doFlips(){
+ 
+  while(needsChecking.size() > 0){
+    halfEdge hE = needsChecking.get(needsChecking.size()-1);
+    if (!checkLD(hE)){
+      hE.displayRed();
+    }else{
+      hE.displayGreen();
+    }
+    needsChecking.remove(hE);
+  }
+  
 }
 
 void mouseClicked() {
@@ -214,7 +284,10 @@ void mouseClicked() {
     println(onFace(currentpoint, testEdge.next));
     */
     split(tNode, currentpoint);
-    
+    needsChecking.add(tNode.halfOne);
+    needsChecking.add(tNode.halfTwo);
+    needsChecking.add(tNode.halfThree);
+    doFlips();
     
   }
   
