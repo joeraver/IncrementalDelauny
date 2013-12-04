@@ -194,7 +194,7 @@ boolean checkLD( halfEdge hE){
   //println("C is point (" + C.x + ", " C.y + ")" );
   //println("D is point (" + D.x + ", " D.y + ")" );
   
-  drawCircumCircle(A,B,C);
+  //drawCircumCircle(A,B,C);
   
   
   float topSquared = ((A.x * A.x) - (D.x * D.x)) + ((A.y * A.y) - (D.y * D.y));
@@ -229,6 +229,26 @@ boolean checkLD( halfEdge hE){
 }
 
 void flipEdge(halfEdge hE){
+  
+  stroke(255);
+  line(hE.origin.x, hE.origin.y, hE.destination.x, hE.destination.y);
+  
+  vertex B = hE.next.destination;
+  vertex D = hE.twin.next.destination;
+  
+  hE.twin.prev.next = hE.next;
+  hE.next.prev = hE.twin.prev;
+  
+  hE.twin.next.prev = hE.next;
+  hE.prev.next = hE.twin.next;
+  
+  hE.next.next = new halfEdge(B,D);
+  hE.prev.prev = new halfEdge(D,B);
+  
+  hE.twin.next.next = hE.prev.prev;
+  hE.twin.prev.prev = hE.next.next;
+  
+  edgeList.remove(hE);
 }
 
 void drawCircumCircle(vertex A, vertex B, vertex C){
@@ -248,6 +268,7 @@ void doFlips(){
   while(needsChecking.size() > 0){
     halfEdge hE = needsChecking.get(needsChecking.size()-1);
     if (!checkLD(hE)){
+      //flipEdge(hE);
       hE.displayRed();
     }else{
       hE.displayGreen();
